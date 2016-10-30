@@ -1,37 +1,31 @@
-# Artifact Adapters
+# Artifactor Adapters
 
-This *Artifact Registry* app/API web server is being built using Koa 2 using ES7 async/await syntax.
+*Artifact Adapters* for use by the Artifactor API:
 
-The initial project was generated using [koa-generator](https://www.npmjs.com/package/koa-generator)
-using `koa2` binary: `$ koa2 artifactor` 
-
-## Usage
-- install/configure
-- run
+- [artifactor-routes](https://github.com/kristianmandrup/artifactor-routes).
+- [artifactor-sockets](https://github.com/kristianmandrup/artifactor-sockets) *coming soon*
 
 ### Install
 
-- clone this repo
-- `npm install` - install dependencies 
+`npm i artifactor-adapters --save`
 
 ### Build
+TODO: Webpack
 
 `npm run build` - builds `/src` folder and puts resulting ES5 `.js` files in `/dist`
 
 ### Auto build
+TODO: Webpack
 
 `npm run watch` - builds `/src` and watches for changes to `/src` files for auto-build!
 
 ### Run
+TODO: Webpack
 
 - `$ npm start` or `$ npm koa` - start the server
 
-_NOTICE_: Please be aware that the server doesn't respond to the root route.
-So to test it, try a route like:
-
-`http://localhost:3000/components/contacts`
-
 ### Troubleshooting
+TODO: Webpack
 
 If you still get an error, try removing the `dist` folder:
 
@@ -39,44 +33,31 @@ If you still get an error, try removing the `dist` folder:
 
 Then recompile via `build` or `watch` task and start server again.
 
-To disable to DB adapter, uncomment it from `src/adapters/index.js` 
-
-```js
-module.exports = {
-  // db: require('./db-adapter'),
-  file: require('./file-adapter')
-}
-```
-
 ### Run Test or Test suite
+TODO: Webpack using [mocha-webpack](https://www.npmjs.com/package/mocha-webpack)
 
-To run the tests, the Koa server app must be running...
+`npm test`
 
-`npm test` (runs test command in `Makefile`)
+Using [mocha-test-dsl](https://www.npmjs.com/package/mocha-test-dsl) for better, more flexible and decoupled testing.
 
-You can configure `tests/utils/server.js` to start the http server with the Koa app and set the `adapter`
+## Adapters
 
-```js
-const adapter = 'db';
-```
+Currently we are developing these adapters
+- fake
+- file
+- db
+  - mongo
+  - couch
 
-Bonus if you configure the `Makefile` for different kinds of test runs or find another/better way to run the tests
-for various scenarios and configurations, f.ex using a config file of some sort?
+Use the `adapters/config.js` file to configure which adapters are active. 
 
-### Use new testing DSL
+### Fake adapter
 
-See [mocha-test-dsl](https://www.npmjs.com/package/mocha-test-dsl)
+To simulate a database full of artefacts we are introducing the Fake adapter.
 
-This DSL lets you drastically improve how you write readable, reusable composable tests and avoid duplication, keeping it
-concise and to the point and very decoupled!!  
+It is based on the [json schema faker](json-schema-faker.js.org) which uses [faker.js](https://github.com/kristianmandrup/Faker.js/) to generate fake data based on a schema definitions.
 
-### Faker adapter
-
-To simulate a database full of artefacts we are introducing the Faker adapter. 
-It is based on the [json schema faker](json-schema-faker.js.org) which uses [faker.js](https://github.com/marak/Faker.js/) 
-to generate fake data based on the schema definitions. This is a similar approach to Mongoose schemas, 
-but those are used for validation. It would be cool if we could use the fake data to also populate the Database via the 
-DB models!
+This is a similar approach to Mongoose schemas. The fake data can also used to populate the various data stores, such as the database and file system etc.
 
 See `faker/schemas` for the faker schemas:
 
@@ -116,137 +97,15 @@ To populate the DBs, add functions in `/src/data` for `/mongo/populate` and `/co
 Currently we have a validation error when trying to use the components item reponse to create a DB model using the
 Mongoose `Component` schema. 
 
-## Architecture  
-
-### app.js
-
-Uses the following middleware:
-- [bodyparser](https://www.npmjs.com/package/koa-bodyparser)
-- [json](https://www.npmjs.com/package/koa-json)
-- [logger](https://www.npmjs.com/package/koa-logger)
-- [static](https://www.npmjs.com/package/koa-static)
-- [router](https://www.npmjs.com/package/koa-router)
-- [views](https://github.com/queckezz/koa-views) - supports pug
-- [Pug views](https://www.npmjs.com/package/pug) formerly Jade templating via [koa-pug](https://github.com/chrisyip/koa-pug)
-
-See `bin/www` binary, which demonstrated how to create/configure the koa server app:
-
-```js
-var createApp = require('../dist/app');
-
-// you can configure the adapter and other settings via options object
-// createApp({adapter: 'db'});  
-
-var app = createApp();
-```
-
-### configure.js
-
-Used to configure the koa app, exports this function:
-
-```js
-function(app, options) {
-  // configuration
-}
-```
-
-`app.js` uses configure function as follows:
-
-```js
-module.exports = function(options = {adapter: 'file'}) {
-  return configure(app, options);
-}
-```
-
 ## Switching adapter
 
 Simply pass the `adapter` option either from `app.js` or in `bin/www` (or similar) as shown above:
 
  `var app = createApp({adapter: 'db'});`
 
-## Routes
-
-In `configure.js` the app is configured with artefact routes, by calling the `artefacts` router generator function with the app options. 
-
-`const artefactRouters = artefacts(options);`
-
-The app configure function then adds each router returned as a middleware:
-
-```js
-for (let router of artefactRouters) {
-  app.use(router.routes(), router.allowedMethods());
-}
-```
-
-All the REST routes can be found in the `/routes/api/rest` folder. 
-Artefact routes are generated in `/routes/api/rest/index.js`. 
-
-It maps over the list of entities and calls `factory.createRouter(entity)` to 
-create a new Router the `Artefact` domain model. 
-
-`entities.list.map(entity => routerFactory.create(entity, adapter));`
-
-The list of `Router` instances are returned and are added to the Koa app as middlewares.
-
-The router factory can be found in: `routes/api/rest/router-factory.js` and uses 
-the `route-factory.js` in the same folder to create each route, linked to an action in the `/actions` sub-folder.
-
-```js
-createRouter() {
-  const router = new Router({
-    prefix: `/${entity}`
-  });
-
-  router
-    .get('list', '/', this.list.bind(this))
-    // ...
-
-  return router;
-}
-```
-
-Note: We should avoid using `.bind(this)` so perhaps we should instead use a higher level function?
-
-The router is based on [koa-router 7.x](https://www.npmjs.com/package/koa-router) for Koa 2.
-See `dependencies` entry in `package.json`: `"koa-router": "^7.0.0",`
-
-The `createRouter` creates a generic REST based Router using a Rails like REST convention.
-- `:id` is the identifier, ie. the unique name of the registered artefact (NOT a number!).
-- `prefix` is the prefix for each of the routes generated, ie the type of entity such as `component`
-
-In the end for a `contacts` component, the REST routes would be:
-- GET `/components/contacts` (GET to read/retrieve the single item `contacts`)
-- POST `/components/contacts` (POST to create the single item `contacts`)  
-- ...
-
-For each supported action there is a class, such as `GetRoute` for the `get` action, which extends `BaseRoute`
-TODO: clean up naming to make consistent! 
-
-```js
-module.exports = class GetRoute extends BaseRoute {
-  constructor(ctx, next, options) {    
-    super(ctx, next, options);
-  }
-
-  // ...
-}
-```
-
-## adapters
-
-Currently we are developing these adapters
-- fake
-- file
-- db  
-  - mongo
-  - couch
-
-Use the `adapters/config.js` file to configure which adapters are active. 
-
 ### Fake adapter
 
-Uses `faker` to generate fake responses. Useful for "quick and dirty" testing or generate fake realistic 
-looking responses for any purpose ;) 
+Uses `faker` to generate fake responses. Useful for "quick and dirty" testing or generate fake realistic looking responses for any purpose ;) 
 
 ### File adapter
 
@@ -263,6 +122,9 @@ gradually switch to using Mongo DB schemas/models for the API.
 ## Couch DB for Pouch DB (sync)
 
 See `adapters/db/couch`
+
+One of the main benefits of using Couch DB, is that we can then automatically sync with the client via Pouch DB 
+and PouchDB/CouchDB combination also supports offline mode.
 
 ### Setup
 
@@ -353,21 +215,17 @@ See [Switching out callbacks with promises in Mongoose](http://eddywashere.com/b
 ### Save
 
 ```js
-fluffy.save().then(fluffy => {
-  fluffy.speak();
-}).catch(err => {
-  
-});
+fluffy.save()
+  .then(fluffy => fluffy.speak())
+  .catch(err => console.error(err));
 ```
 
 Say time goes by and we want to display all the kittens we've seen. We can access all of the kitten documents through our Kitten model.
 
 ```js
-Kitten.find().exec().then(kittens => {
-  console.log(kittens);
-}).catch(err => {
-
-})
+Kitten.find().exec()
+  .then(kittens => console.log(kittens))
+  .catch(err => console.error(err));
 ```
 
 ### Removing models
@@ -390,57 +248,9 @@ To update an artefact, use `findOneAndUpdate` as follows:
 
 `Component.findOneAndUpdate(query, update, {'upsert': true}).exec().then(onSuccess, onError);`
 
-## File IO adapter
+## File adapter
 
-Currently the File IO adapter is designed to use `/adapters/file` to respond with canned responses from `.json` files 
-which can all found in the `/responses` folder.
-
-The next step is to use a JSON database (Mongo DB via [Mongoose](http://mongoosejs.com/docs/)) or Couch DB. 
-Each of these DBs are simple, easy to use and scalable.
-
-Later on we might perhaps use [KeystoneJS](http://keystonejs.com/) - which uses Mongoose under the covers...
-
-Note that one of the benefits of using Couch DB, is that we can then automatically sync with the client via Pouch DB 
-and PouchDB/CouchDB combination also supports offline mode.
-
-### Canned API responses
-
-The following is the current structure for canned API responses. 
-Use the same file structure (pattern) for each entity.
-
-```
-/responses
-  /addons
-  /apps
-    ...
-  /components
-    /contacts
-      item.json
-      version.json
-    list.json
-  /libs
-  /plugins
-```
-
-## Test
-
-To test CUD (Create, Update, Delete) API functionality, you can use the canned requests in `/requests`:
-
-```
-/requests
-  /components
-    /contacts
-      create.json
-      rate.json
-      remove.json
-  /apps
-    /contact-app
-      create.json
-      ...
-```
-
-TODO: rename `create` to `upsert` (update or insert).
-Note: any "production ready" storage should NOT update but only *create new versions*.
+Currently the File adapter is designed to save and respond with canned responses from `.json` files from the `/responses` folder.
 
 ## License
 
