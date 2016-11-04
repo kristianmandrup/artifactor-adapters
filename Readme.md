@@ -9,36 +9,24 @@
 
 `npm i artifactor-adapters --save`
 
-### Build
-TODO: Webpack
+## Development environment
 
-`npm run build` - builds `/src` folder and puts resulting ES5 `.js` files in `/dist`
-
-### Auto build
-TODO: Webpack
-
-`npm run watch` - builds `/src` and watches for changes to `/src` files for auto-build!
-
-### Run
-TODO: Webpack
-
-- `$ npm start` or `$ npm koa` - start the server
-
-### Troubleshooting
-TODO: Webpack
-
-If you still get an error, try removing the `dist` folder:
-
-`rm -r dist`
-
-Then recompile via `build` or `watch` task and start server again.
+Please see the `docs` folder, in particular `docs/env-setup/library-dev.md` 
+which describes the full development environment, how it was configured etc.
 
 ### Run Test or Test suite
-TODO: Webpack using [mocha-webpack](https://www.npmjs.com/package/mocha-webpack)
 
 `npm test`
 
-Using [mocha-test-dsl](https://www.npmjs.com/package/mocha-test-dsl) for better, more flexible and decoupled testing.
+Write tests using either:
+- [ava](https://github.com/ava/ava)
+- or [mocha-test-dsl](https://www.npmjs.com/package/mocha-test-dsl) if you prefer using [mocha]
+
+Note that Ava can use `spec` syntax via [ava-spec]()
+
+- Ava testing framework: [ava](https://github.com/ava/ava)
+- BDD: [ava-spec](https://www.npmjs.com/package/ava-spec)
+- test doubles: [testdouble.js]()
 
 ## Adapters
 
