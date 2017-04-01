@@ -1,5 +1,7 @@
 # Artifactor Adapters
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/kristianmandrup/artifactor-adapters.svg?token=2b49c39f955382d147fa84269b558007834a57b4d44adc2a0445ff2217843587)](https://greenkeeper.io/)
+
 *Artifact Adapters* for use by the Artifactor API:
 
 - [artifactor-routes](https://github.com/kristianmandrup/artifactor-routes).
